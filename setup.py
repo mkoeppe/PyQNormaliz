@@ -9,16 +9,16 @@ else:
     macro_list = [ ]
 
 setup(
-    name = 'PyNormaliz',
-    version = '1.15',
+    name = 'PyQNormaliz',
+    version = '0.1',
     description = 'An interface to Normaliz',
     author = 'Sebastian Gutsche, Richard Sieg',
     author_email = 'sebastian.gutsche@gmail.com',
-    url = 'https://github.com/Normaliz/PyNormaliz',
-    py_modules = [ "PyNormaliz" ],
-    ext_modules = [ Extension( "PyNormaliz_cpp",
-                              [ "NormalizModule.cpp" ],
-                              extra_link_args=['-lnormaliz', '-lgmp' ],
+    url = 'https://github.com/Normaliz/PyQNormaliz',
+    ext_modules = [ Extension( "PyQNormaliz_cpp",
+                              [ "QNormalizModule.cpp" ],
+                              extra_compile_args=['-I/home/sebastian/Dokumente/projects/Normaliz/worktree-enfnormaliz/nmz_opt_lib/include', '-L/home/sebastian/Dokumente/projects/Normaliz/worktree-enfnormaliz/nmz_opt_lib/lib'],
+                              extra_link_args=['-lQnormaliz', '-lgmp' ],
                               define_macros = macro_list ) ],
     
     package_data = {'': [ "COPYING", "GPLv2", "Readme.md" ] },
