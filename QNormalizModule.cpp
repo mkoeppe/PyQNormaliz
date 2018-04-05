@@ -287,7 +287,7 @@ static bool PyIntMatrixToNmz( vector<vector<Integer> >& out, PyObject* in ){
 }
 
 template<typename NumberField, typename NumberFieldElem>
-bool prepare_nf_input( vector< vector<NumberFieldElem> >& out, PyObject* in, NumberField& nf ){
+bool prepare_nf_input( vector< vector<NumberFieldElem> >& out, PyObject* in, NumberField* nf ){
     if (!PyList_Check( in ) )
         return false;
     const int nr = PyList_Size( in );
@@ -304,7 +304,7 @@ bool prepare_nf_input( vector< vector<NumberFieldElem> >& out, PyObject* in, Num
             fmpq_poly_t current_poly;
             fmpq_poly_init(current_poly);
             vector2fmpq_poly(current_poly,current_vector);
-            NumberFieldElem current_elem(nf.get_renf());
+            NumberFieldElem current_elem(nf->get_renf());
             current_elem = current_poly;
             out[i].push_back(current_elem);
         }
@@ -467,17 +467,27 @@ PyObject* NmzMatrixToPyList(const vector< vector<Integer> >& in)
  * 
  ***************************************************************************/
 
+struct NumberFieldCone{
+    renf_class* nf;
+    Cone<renf_elem_class>* cone;
+};
+
 void delete_cone_renf( PyObject* cone ){
-  Cone<renf_elem_class> * cone_ptr = reinterpret_cast<Cone<renf_elem_class>* >( PyCapsule_GetPointer( cone, cone_name ) );
-  delete cone_ptr;
+  NumberFieldCone * cone_ptr = reinterpret_cast<NumberFieldCone*>( PyCapsule_GetPointer( cone, cone_name ) );
+  delete cone_ptr->cone;
+  delete cone_ptr->nf;
 }
 
 Cone<renf_elem_class>* get_cone_renf( PyObject* cone ){
-  return reinterpret_cast<Cone<renf_elem_class>*>( PyCapsule_GetPointer( cone, cone_name ) );
+  NumberFieldCone* cone_ptr = reinterpret_cast<NumberFieldCone*>( PyCapsule_GetPointer( cone, cone_name ) );
+  return cone_ptr->cone;
 }
 
-PyObject* pack_cone( Cone<renf_elem_class>* C ){
-  return PyCapsule_New( reinterpret_cast<void*>( C ), cone_name, &delete_cone_renf );
+PyObject* pack_cone( Cone<renf_elem_class>* C, renf_class* nf ){
+  NumberFieldCone* cone_ptr = new NumberFieldCone();
+  cone_ptr->nf = nf;
+  cone_ptr->cone = C;
+  return PyCapsule_New( reinterpret_cast<void*>( cone_ptr ), cone_name, &delete_cone_renf );
 }
 
 bool is_cone( PyObject* cone ){
@@ -551,11 +561,11 @@ template<typename NumberField, typename NumberFieldElem>
 static PyObject* _NmzQCone_internal(PyObject * args, PyObject* kwargs)
 {
 
-    NumberField renf;
+    NumberField * renf = new NumberField();
 
     PyObject* number_field_data = PyDict_GetItemString(kwargs,"NumberFieldData");
     istringstream number_field_data_stream(PyUnicodeToString(number_field_data));
-    number_field_data_stream >> renf;
+    number_field_data_stream >> *renf;
     // Error handling
     // number_field_data_stream >> set_renf(renf);
     // Error handling
@@ -584,7 +594,7 @@ static PyObject* _NmzQCone_internal(PyObject * args, PyObject* kwargs)
 
     Cone<NumberFieldElem>* C = new Cone<NumberFieldElem>(input);
     
-    PyObject* return_container = pack_cone( C );
+    PyObject* return_container = pack_cone( C, renf );
     
     return return_container;
 }
@@ -700,7 +710,6 @@ PyObject* _NmzCompute(Cone<Integer>* C, PyObject* args)
         propsToCompute.set( libQnormaliz::toConeProperty(prop_str) );
     }
     ConeProperties notComputed = C->compute(propsToCompute);
-    cerr << "here";
 
     // Cone.compute returns the not computed properties
     // we return a bool, true when everything requested was computed
