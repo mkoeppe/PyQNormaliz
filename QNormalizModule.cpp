@@ -202,6 +202,13 @@ PyObject* NmzToPyList( mpq_class in ){
   return out_list;
 }
 
+PyObject* NmzToPyNumber( mpq_class in ){
+  PyObject* out_list = PyList_New( 2 );
+  PyList_SetItem( out_list, 0, NmzToPyNumber( in.get_num() ) );
+  PyList_SetItem( out_list, 1, NmzToPyNumber( in.get_den() ) );
+  return out_list;
+}
+
 bool PyNumberToNmz( PyObject* in, long long & out ){
   
   int overflow;
@@ -322,6 +329,15 @@ PyObject* NmzVectorToPyList(const vector<Integer>& in)
         PyList_SetItem(vector, i, NmzToPyNumber(in[i]));
     }
     return vector;
+}
+
+PyObject* NmzToPyNumber( renf_elem_class in ){
+    fmpq_poly_t current;
+    fmpq_poly_init(current);
+    in.get_fmpq_poly(current);
+    vector<mpq_class> output;
+    fmpq_poly2vector(output,current);
+    return NmzVectorToPyList(output);
 }
 
 PyObject* NmzBoolVectorToPyList(const vector<bool>& in)
@@ -740,46 +756,41 @@ PyObject* _NmzCompute_Outer(PyObject* self, PyObject* args){
   
 }
 
-// /***************************************************************************
-//  * 
-//  * NmzIsComputed
-//  * 
-//  ***************************************************************************/
+/***************************************************************************
+ * 
+ * NmzIsComputed
+ * 
+ ***************************************************************************/
 
-// template<typename Integer>
-// PyObject* NmzIsComputed(Cone<Integer>* C, PyObject* prop)
-// {
-//     FUNC_BEGIN
+template<typename Integer>
+PyObject* NmzIsComputed(Cone<Integer>* C, PyObject* prop)
+{
+    FUNC_BEGIN
     
-//     libQnormaliz::ConeProperty::Enum p = libQnormaliz::toConeProperty(PyUnicodeToString( prop ) );
+    libQnormaliz::ConeProperty::Enum p = libQnormaliz::toConeProperty(PyUnicodeToString( prop ) );
   
-//     return C->isComputed(p) ? Py_True : Py_False;
+    return C->isComputed(p) ? Py_True : Py_False;
 
-//     FUNC_END
-// }
+    FUNC_END
+}
 
-// PyObject* NmzIsComputed_Outer(PyObject* self, PyObject* args)
-// {
-//     FUNC_BEGIN
+PyObject* NmzIsComputed_Outer(PyObject* self, PyObject* args)
+{
+    FUNC_BEGIN
     
-//     PyObject* cone = PyTuple_GetItem( args, 0 );
-//     PyObject* to_compute = PyTuple_GetItem( args, 1 );
+    PyObject* cone = PyTuple_GetItem( args, 0 );
+    PyObject* to_compute = PyTuple_GetItem( args, 1 );
     
-//     if( !is_cone(cone) ){
-//         PyErr_SetString( PyNormaliz_cppError, "First argument must be a cone" );
-//         return NULL;
-//     }
+    if( !is_cone(cone) ){
+        PyErr_SetString( PyNormaliz_cppError, "First argument must be a cone" );
+        return NULL;
+    }
     
-//     if( cone_name_str == string(PyCapsule_GetName(cone)) ){
-//         Cone<mpz_class>* cone_ptr = get_cone_mpz(cone);
-//         return NmzIsComputed(cone_ptr, to_compute);
-//     }else{
-//         Cone<long long>* cone_ptr = get_cone_long(cone);
-//         return NmzIsComputed(cone_ptr,to_compute);
-//     }
+    Cone<renf_elem_class>* cone_ptr = get_cone_renf(cone);
+    return NmzIsComputed(cone_ptr, to_compute);
     
-//     FUNC_END
-// }
+    FUNC_END
+}
 
 // /***************************************************************************
 //  * 
@@ -819,34 +830,32 @@ PyObject* _NmzCompute_Outer(PyObject* self, PyObject* args){
 //     FUNC_END
 // }
 
-// /***************************************************************************
-//  * 
-//  * NmzResult
-//  * 
-//  ***************************************************************************/
+/***************************************************************************
+ * 
+ * NmzResult
+ * 
+ ***************************************************************************/
 
-// template<typename Integer>
-// PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
-// {
+template<typename Integer>
+PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
+{
     
-//     string prop = PyUnicodeToString( prop_obj );
+    string prop = PyUnicodeToString( prop_obj );
 
-//     libQnormaliz::ConeProperty::Enum p = libQnormaliz::toConeProperty(prop);
+    libQnormaliz::ConeProperty::Enum p = libQnormaliz::toConeProperty(prop);
     
-//     current_interpreter_sigint_handler = PyOS_setsig(SIGINT,signal_handler);
-//     ConeProperties notComputed = C->compute(ConeProperties(p));
-//     PyOS_setsig(SIGINT, current_interpreter_sigint_handler );
+    ConeProperties notComputed = C->compute(ConeProperties(p));
     
-//     if (notComputed.any()) {
-//         return Py_None;
-//     }
+    if (notComputed.any()) {
+        return Py_None;
+    }
 
-//     switch (p) {
-//     case libQnormaliz::ConeProperty::Generators:
-//         return NmzMatrixToPyList(C->getGenerators());
+    switch (p) {
+    case libQnormaliz::ConeProperty::Generators:
+        return NmzMatrixToPyList(C->getGenerators());
 
-//     case libQnormaliz::ConeProperty::ExtremeRays:
-//         return NmzMatrixToPyList(C->getExtremeRays());
+    case libQnormaliz::ConeProperty::ExtremeRays:
+        return NmzMatrixToPyList(C->getExtremeRays());
 
 //     case libQnormaliz::ConeProperty::VerticesOfPolyhedron:
 //         return NmzMatrixToPyList(C->getVerticesOfPolyhedron());
@@ -1062,41 +1071,37 @@ PyObject* _NmzCompute_Outer(PyObject* self, PyObject* args){
 //         PyErr_SetString( PyNormaliz_cppError, "ConeProperty is input-only" );
 //         return NULL;
 // #endif
-//     default:
-//         PyErr_SetString( PyNormaliz_cppError, "Unknown cone property" );
-//         return NULL;
-//         break;
-//     }
+    default:
+        PyErr_SetString( PyNormaliz_cppError, "Unknown cone property" );
+        return NULL;
+        break;
+    }
 
-//     return Py_None;
-// }
+    return Py_None;
+}
 
-// PyObject* _NmzResult( PyObject* self, PyObject* args ){
+PyObject* _NmzResult( PyObject* self, PyObject* args ){
   
-//   FUNC_BEGIN
-//   PyObject* cone = PyTuple_GetItem( args, 0 );
-//   PyObject* prop = PyTuple_GetItem( args, 1 );
+  FUNC_BEGIN
+  PyObject* cone = PyTuple_GetItem( args, 0 );
+  PyObject* prop = PyTuple_GetItem( args, 1 );
   
-//   if( !is_cone( cone ) ){
-//     PyErr_SetString( PyNormaliz_cppError, "First argument must be a cone" );
-//     return NULL;
-//   }
+  if( !is_cone( cone ) ){
+    PyErr_SetString( PyNormaliz_cppError, "First argument must be a cone" );
+    return NULL;
+  }
   
-//   if( !string_check( prop ) ){
-//     PyErr_SetString( PyNormaliz_cppError, "Second argument must be a unicode string" );
-//     return NULL;
-//   }
+  if( !string_check( prop ) ){
+    PyErr_SetString( PyNormaliz_cppError, "Second argument must be a unicode string" );
+    return NULL;
+  }
   
-//   if( cone_name_str == string(PyCapsule_GetName(cone)) ){
-//     Cone<mpz_class>* cone_ptr = get_cone_mpz(cone);
-//     return _NmzResultImpl(cone_ptr, prop);
-//   }else{
-//     Cone<long long>* cone_ptr = get_cone_long(cone);
-//     return _NmzResultImpl(cone_ptr, prop);
-//   }
+  Cone<renf_elem_class>* cone_ptr = get_cone_renf(cone);
+  return _NmzResultImpl(cone_ptr, prop);
   
-//   FUNC_END
-// }
+  
+  FUNC_END
+}
 
 // /***************************************************************************
 //  * 
@@ -1447,12 +1452,12 @@ static PyMethodDef PyQNormaliz_cppMethods[] = {
     //  "Copy an existing cone" },
     {"NmzCompute", (PyCFunction)_NmzCompute_Outer, METH_VARARGS,
      "Compute some stuff"},
-    // {"NmzIsComputed", (PyCFunction)NmzIsComputed_Outer, METH_VARARGS,
-    //  "Check if property is computed "},
+    {"NmzIsComputed", (PyCFunction)NmzIsComputed_Outer, METH_VARARGS,
+     "Check if property is computed "},
     // {"NmzSetGrading", (PyCFunction)NmzSetGrading, METH_VARARGS,
     //  "Reset the grading of a cone"},
-    // {"NmzResult", (PyCFunction)_NmzResult, METH_VARARGS,
-    //   "Return cone property" },
+    {"NmzResult", (PyCFunction)_NmzResult, METH_VARARGS,
+      "Return cone property" },
     // { "NmzSetVerboseDefault", (PyCFunction)NmzSetVerboseDefault, METH_VARARGS,
     //   "Set verbosity" },
     // { "NmzSetVerbose", (PyCFunction)NmzSetVerbose_Outer, METH_VARARGS,
