@@ -83,6 +83,12 @@ static string cone_name_str_long( cone_name_long );
 
 static PyOS_sighandler_t current_interpreter_sigint_handler;
 
+static PyObject * RationalHandler = NULL;
+static PyObject * NumberfieldElementHandler = NULL;
+static PyObject * VectorHandler = NULL;
+static PyObject * MatrixHandler = NULL;
+
+
 /***************************************************************************
  * 
  * Compiler version control
@@ -121,6 +127,20 @@ static PyOS_sighandler_t current_interpreter_sigint_handler;
 // #if NMZ_RELEASE < 30502
 //     static_assert(false, "Your Normaliz version is to old! Update to 3.5.2 or newer.");
 // #endif
+
+/***************************************************************************
+ * 
+ * Call func on one argument
+ * 
+ ***************************************************************************/
+
+PyObject* CallPythonFuncOnOneArg( PyObject* function, PyObject* single_arg ){
+    PyObject* single_arg_tuple = PyTuple_Pack(1,single_arg);
+    PyObject* return_obj = PyObject_CallObject(function,single_arg_tuple);
+    Py_DecRef(single_arg);
+    Py_DecRef(single_arg_tuple);
+    return return_obj;
+}
 
 /***************************************************************************
  * 
@@ -196,73 +216,61 @@ PyObject* NmzToPyNumber( mpz_class in ){
 }
 
 PyObject* NmzToPyList( mpq_class in ){
-  PyObject* out_list = PyList_New( 2 );
-  PyList_SetItem( out_list, 0, NmzToPyNumber( in.get_num() ) );
-  PyList_SetItem( out_list, 1, NmzToPyNumber( in.get_den() ) );
-  return out_list;
+    PyObject* out_list = PyList_New( 2 );
+    PyList_SetItem( out_list, 0, NmzToPyNumber( in.get_num() ) );
+    PyList_SetItem( out_list, 1, NmzToPyNumber( in.get_den() ) );
+    if(RationalHandler!=NULL)
+        out_list = CallPythonFuncOnOneArg(RationalHandler,out_list);
+    return out_list;
 }
 
 PyObject* NmzToPyNumber( mpq_class in ){
-  PyObject* out_list = PyList_New( 2 );
-  PyList_SetItem( out_list, 0, NmzToPyNumber( in.get_num() ) );
-  PyList_SetItem( out_list, 1, NmzToPyNumber( in.get_den() ) );
-  return out_list;
+    PyObject* out_list = PyList_New( 2 );
+    PyList_SetItem( out_list, 0, NmzToPyNumber( in.get_num() ) );
+    PyList_SetItem( out_list, 1, NmzToPyNumber( in.get_den() ) );
+    if(RationalHandler!=NULL)
+        out_list = CallPythonFuncOnOneArg(RationalHandler,out_list);
+    return out_list;
 }
 
 bool PyNumberToNmz( PyObject* in, long long & out ){
-  
-  int overflow;
-  out = PyLong_AsLongLongAndOverflow( in, &overflow );
-  if( overflow == -1 )
-    return false;
-  return true;
-  
+    int overflow;
+    out = PyLong_AsLongLongAndOverflow( in, &overflow );
+    if( overflow == -1 )
+        return false;
+    return true;
 }
 
 PyObject* NmzToPyNumber( long long in ){
-  
   return PyLong_FromLongLong( in );
-  
 }
 
 PyObject* NmzToPyNumber( libQnormaliz::key_t in ){
-  
   return PyLong_FromLong( in );
-  
 }
 
 #ifdef ENVIRONMENT64
 PyObject* NmzToPyNumber( size_t in ){
-  
   return PyLong_FromLong( in );
-  
 }
 #endif
 
 PyObject* NmzToPyNumber( long in ){
-  
   return PyLong_FromLong( in );
-  
 }
 
 PyObject* NmzToPyNumber( double in ){
-  
   return PyFloat_FromDouble( in );
-  
 }
 
 template<typename Integer>
 bool PyNumberToNmz(Integer& x, Integer &out){
-  
   return Integer::unimplemented_function;
-  
 }
 
 template<typename Integer>
 PyObject* NmzToPyNumber(Integer &in){
-  
   return Integer::unimplemented_function;
-  
 }
 
 template<typename Integer>
@@ -320,7 +328,7 @@ bool prepare_nf_input( vector< vector<NumberFieldElem> >& out, PyObject* in, Num
 }
 
 template<typename Integer>
-PyObject* NmzVectorToPyList(const vector<Integer>& in)
+PyObject* NmzVectorToPyList(const vector<Integer>& in, bool do_callback=true)
 {
     PyObject* vector;
     const size_t n = in.size();
@@ -328,6 +336,8 @@ PyObject* NmzVectorToPyList(const vector<Integer>& in)
     for (size_t i = 0; i < n; ++i) {
         PyList_SetItem(vector, i, NmzToPyNumber(in[i]));
     }
+    if(do_callback&&VectorHandler!=NULL)
+        vector = CallPythonFuncOnOneArg(VectorHandler,vector);
     return vector;
 }
 
@@ -337,7 +347,10 @@ PyObject* NmzToPyNumber( renf_elem_class in ){
     in.get_fmpq_poly(current);
     vector<mpq_class> output;
     fmpq_poly2vector(output,current);
-    return NmzVectorToPyList(output);
+    PyObject * out_list = NmzVectorToPyList(output,false);
+    if(NumberfieldElementHandler!=NULL)
+        out_list = CallPythonFuncOnOneArg(NumberfieldElementHandler,out_list);
+    return out_list;
 }
 
 PyObject* NmzBoolVectorToPyList(const vector<bool>& in)
@@ -371,6 +384,8 @@ PyObject* NmzMatrixToPyList(const vector< vector<Integer> >& in)
     for (size_t i = 0; i < n; ++i) {
         PyList_SetItem(matrix, i, NmzVectorToPyList(in[i]));
     }
+    if(MatrixHandler!=NULL)
+        matrix = CallPythonFuncOnOneArg(MatrixHandler,matrix);
     return matrix;
 }
 
@@ -1080,27 +1095,48 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
     return Py_None;
 }
 
-PyObject* _NmzResult( PyObject* self, PyObject* args ){
-  
-  FUNC_BEGIN
-  PyObject* cone = PyTuple_GetItem( args, 0 );
-  PyObject* prop = PyTuple_GetItem( args, 1 );
-  
-  if( !is_cone( cone ) ){
-    PyErr_SetString( PyNormaliz_cppError, "First argument must be a cone" );
-    return NULL;
-  }
-  
-  if( !string_check( prop ) ){
-    PyErr_SetString( PyNormaliz_cppError, "Second argument must be a unicode string" );
-    return NULL;
-  }
-  
-  Cone<renf_elem_class>* cone_ptr = get_cone_renf(cone);
-  return _NmzResultImpl(cone_ptr, prop);
-  
-  
-  FUNC_END
+PyObject* get_dict_elem_or_null(PyObject* dict, const char* key){
+    PyObject* return_obj = PyDict_GetItemString( dict, key );
+    return return_obj;
+}
+
+PyObject* _NmzResult( PyObject* self, PyObject* args, PyObject* kwargs ){
+    
+    FUNC_BEGIN
+    PyObject* cone = PyTuple_GetItem( args, 0 );
+    PyObject* prop = PyTuple_GetItem( args, 1 );
+    
+    if( !is_cone( cone ) ){
+        PyErr_SetString( PyNormaliz_cppError, "First argument must be a cone" );
+        return NULL;
+    }
+    
+    if( !string_check( prop ) ){
+        PyErr_SetString( PyNormaliz_cppError, "Second argument must be a unicode string" );
+        return NULL;
+    }
+    
+    Cone<renf_elem_class>* cone_ptr = get_cone_renf(cone);
+
+
+    //Set handlers
+    if(kwargs){
+        RationalHandler = PyDict_GetItemString(kwargs,"RationalHandler");
+        NumberfieldElementHandler = get_dict_elem_or_null(kwargs,"NumberfieldElementHandler");
+        VectorHandler = get_dict_elem_or_null(kwargs,"VectorHandler");
+        MatrixHandler = get_dict_elem_or_null(kwargs,"MatrixHandler");
+    }
+    
+    PyObject* result = _NmzResultImpl(cone_ptr, prop);
+
+    RationalHandler = NULL;
+    NumberfieldElementHandler = NULL;
+    VectorHandler = NULL;
+    MatrixHandler = NULL;
+
+    return result;
+
+    FUNC_END
 }
 
 // /***************************************************************************
@@ -1456,7 +1492,7 @@ static PyMethodDef PyQNormaliz_cppMethods[] = {
      "Check if property is computed "},
     // {"NmzSetGrading", (PyCFunction)NmzSetGrading, METH_VARARGS,
     //  "Reset the grading of a cone"},
-    {"NmzResult", (PyCFunction)_NmzResult, METH_VARARGS,
+    {"NmzResult", (PyCFunction)_NmzResult, METH_VARARGS|METH_KEYWORDS,
       "Return cone property" },
     // { "NmzSetVerboseDefault", (PyCFunction)NmzSetVerboseDefault, METH_VARARGS,
     //   "Set verbosity" },
