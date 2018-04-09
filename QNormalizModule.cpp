@@ -542,7 +542,7 @@ static PyObject* _NmzQCone_internal(PyObject * args, PyObject* kwargs)
 
     NumberField * renf = new NumberField();
 
-    PyObject* number_field_data = PyDict_GetItemString(kwargs,"NumberFieldData");
+    PyObject* number_field_data = PyDict_GetItemString(kwargs,"number_field");
     istringstream number_field_data_stream(PyUnicodeToString(number_field_data));
     number_field_data_stream >> *renf;
     // Error handling
@@ -551,7 +551,7 @@ static PyObject* _NmzQCone_internal(PyObject * args, PyObject* kwargs)
 
     map <InputType, vector< vector<NumberFieldElem> > > input;
     
-    PyDict_DelItemString(kwargs,"NumberFieldData");
+    PyDict_DelItemString(kwargs,"number_field");
     if(kwargs!=NULL){
         PyObject* keys = PyDict_Keys(kwargs);
         PyObject* values = PyDict_Values(kwargs);
