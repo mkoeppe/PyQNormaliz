@@ -190,14 +190,11 @@ bool PyNumberToNmz( PyObject * in, mpq_class& out ){
         PyObject* py_denom = PyList_GetItem(in,1);
         mpz_class num;
         if(!PyNumberToNmz(py_num,num)){
-            cerr << "here2" << endl;
             return false;
         }
         mpz_class denom;
         if(!PyNumberToNmz(py_denom,denom)){
-            cerr << "here3" << endl;
             return false;
-
         }
         mpq_class temp(num,denom);
         out.swap(temp);
