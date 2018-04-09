@@ -732,6 +732,8 @@ template<typename Integer>
 PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
 {
     
+    FUNC_BEGIN
+
     string prop = PyUnicodeToString( prop_obj );
 
     libQnormaliz::ConeProperty::Enum p = libQnormaliz::toConeProperty(prop);
@@ -779,8 +781,8 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
 //     case libQnormaliz::ConeProperty::RecessionRank:
 //         return NmzToPyNumber(C->getRecessionRank());
 
-//     case libQnormaliz::ConeProperty::AffineDim:
-//         return NmzToPyNumber(C->getAffineDim());
+    case libQnormaliz::ConeProperty::AffineDim:
+        return NmzToPyNumber(C->getAffineDim());
 
 //     case libQnormaliz::ConeProperty::ModuleRank:
 //         return NmzToPyNumber(C->getModuleRank());
@@ -962,6 +964,8 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
     }
 
     return Py_None;
+
+    FUNC_END
 }
 
 PyObject* get_dict_elem_or_null(PyObject* dict, const char* key){
