@@ -176,6 +176,14 @@ inline PyObject* BoolToPyBool( bool in ){
   return in ? Py_True : Py_False;
 }
 
+// Do conversion for number field poly elements
+bool PyPolyStringToNmz( PyObject* in, vector<mpq_class>& out ){
+    string c_string = PyUnicodeToString(in);
+    vector<mpq_class> temp = poly_components(c_string);
+    out.swap(temp);
+    return true;
+}
+
 // Converting MPZ's to PyLong and back via strings. Worst possible solution ever.
 bool PyNumberToNmz( PyObject *, mpz_class& );
 
@@ -336,7 +344,9 @@ bool prepare_nf_input( vector< vector<NumberFieldElem> >& out, PyObject* in, Num
             if(PyList_Check(current_element)){
                 current_res = PyListToNmz(current_vector,current_element);
             }
-            else {
+            else if(string_check(current_element)) {
+                current_res = PyPolyStringToNmz(current_element,current_vector);
+            } else {
                 mpq_class temp;
                 current_res = PyNumberToNmz(current_element,temp);
                 current_vector.push_back(temp);
