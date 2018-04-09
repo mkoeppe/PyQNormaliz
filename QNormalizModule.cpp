@@ -177,21 +177,41 @@ inline PyObject* BoolToPyBool( bool in ){
 }
 
 // Converting MPZ's to PyLong and back via strings. Worst possible solution ever.
+bool PyNumberToNmz( PyObject *, mpz_class& );
 
 bool PyNumberToNmz( PyObject * in, mpq_class& out ){
-  if( PyFloat_Check( in ) ){
-      mpq_class temp(PyFloat_AsDouble(in));
-      out.swap(temp);
-      return true;
-  }
-  PyObject * in_as_string = PyObject_Str( in );
-  const char* in_as_c_string = PyUnicodeToString( in_as_string ).c_str();
-  out.set_str( in_as_c_string, 10 );
-  return true;
+    if( PyFloat_Check( in ) ){
+        mpq_class temp(PyFloat_AsDouble(in));
+        out.swap(temp);
+        return true;
+    }
+    if( PyList_Check( in ) ){
+        PyObject* py_num = PyList_GetItem(in,0);
+        PyObject* py_denom = PyList_GetItem(in,1);
+        mpz_class num;
+        if(!PyNumberToNmz(py_num,num)){
+            cerr << "here2" << endl;
+            return false;
+        }
+        mpz_class denom;
+        if(!PyNumberToNmz(py_denom,denom)){
+            cerr << "here3" << endl;
+            return false;
+
+        }
+        mpq_class temp(num,denom);
+        out.swap(temp);
+        return true;
+    }
+    PyObject * in_as_string = PyObject_Str( in );
+    const char* in_as_c_string = PyUnicodeToString( in_as_string ).c_str();
+    out.set_str( in_as_c_string, 10 );
+    return true;
 }
 
 bool PyNumberToNmz( PyObject * in, mpz_class& out ){
   if( !PyLong_Check( in ) ){
+      cerr << "here1" << endl;
       return false;
   }
   int overflow;
@@ -275,14 +295,16 @@ PyObject* NmzToPyNumber(Integer &in){
 
 template<typename Integer>
 static bool PyListToNmz( vector<Integer>& out, PyObject* in ){
-  if (!PyList_Check(in))
-        return false;
+    if (!PyList_Check(in)){
+            return false;
+    }
     const int n = PyList_Size(in);
     out.resize(n);
     for (int i = 0; i < n; ++i) {
         PyObject* tmp = PyList_GetItem(in, i);
-        if (!PyNumberToNmz(tmp, out[i]))
+        if (!PyNumberToNmz(tmp, out[i])){
             return false;
+        }
     }
     return true;
 }
@@ -313,7 +335,15 @@ bool prepare_nf_input( vector< vector<NumberFieldElem> >& out, PyObject* in, Num
         for(int j=0; j < current_length;j++){
             PyObject * current_element = PyList_GetItem(current_row,j);
             vector<mpq_class> current_vector;
-            bool current_res = PyListToNmz(current_vector,current_element);
+            bool current_res;
+            if(PyList_Check(current_element)){
+                current_res = PyListToNmz(current_vector,current_element);
+            }
+            else {
+                mpq_class temp;
+                current_res = PyNumberToNmz(current_element,temp);
+                current_vector.push_back(temp);
+            }
             if(!current_res)
                 return false;
             fmpq_poly_t current_poly;
