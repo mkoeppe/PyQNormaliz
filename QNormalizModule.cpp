@@ -85,9 +85,7 @@ void signal_handler( int signal ){
 static PyObject * QNormalizError;
 static PyObject * PyQNormaliz_cppError;
 static const char* cone_name = "Cone";
-static const char* cone_name_long = "Cone<long long>";
 static string cone_name_str( cone_name );
-static string cone_name_str_long( cone_name_long );
 
 static PyOS_sighandler_t current_interpreter_sigint_handler;
 
@@ -495,7 +493,7 @@ PyObject* pack_cone( Cone<renf_elem_class>* C, renf_class* nf ){
 bool is_cone( PyObject* cone ){
   if( PyCapsule_CheckExact( cone ) ){
     // compare as string
-    return cone_name_str == string(PyCapsule_GetName( cone )) || cone_name_str_long == string(PyCapsule_GetName( cone ));
+    return cone_name_str == string(PyCapsule_GetName( cone ));
   }
   return false;
 }
