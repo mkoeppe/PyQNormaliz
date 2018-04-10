@@ -1098,32 +1098,32 @@ PyObject* NmzSetVerbose_Outer(PyObject* self, PyObject* args)
     
 // }
 
-// /***************************************************************************
-//  * 
-//  * Set number of threads
-//  * 
-//  ***************************************************************************/
+/***************************************************************************
+ * 
+ * Set number of threads
+ * 
+ ***************************************************************************/
 
-// PyObject* NmzSetNumberOfNormalizThreads(PyObject* self, PyObject* args ){
+PyObject* NmzSetNumberOfNormalizThreads(PyObject* self, PyObject* args ){
     
-//     FUNC_BEGIN
+    FUNC_BEGIN
     
-//     PyObject* num_treads = PyTuple_GetItem( args, 0 );
+    PyObject* num_treads = PyTuple_GetItem( args, 0 );
     
-//     if( !PyLong_Check( num_treads ) ){
-//         PyErr_SetString( PyQNormaliz_cppError, "First argument must be an integer" );
-//         return NULL;
-//     }
+    if( !PyLong_Check( num_treads ) ){
+        PyErr_SetString( PyQNormaliz_cppError, "First argument must be an integer" );
+        return NULL;
+    }
     
-//     long num_threads_long = PyLong_AsLong( num_treads );
+    long num_threads_long = PyLong_AsLong( num_treads );
     
-//     num_threads_long = libQnormaliz::set_thread_limit( num_threads_long );
+    num_threads_long = libQnormaliz::set_thread_limit( num_threads_long );
     
-//     return PyLong_FromLong( num_threads_long );
+    return PyLong_FromLong( num_threads_long );
     
-//     FUNC_END
+    FUNC_END
     
-// }
+}
 
 /***************************************************************************
  * 
@@ -1162,20 +1162,18 @@ static PyMethodDef PyQNormaliz_cppMethods[] = {
     //  "Reset the grading of a cone"},
     {"NmzResult", (PyCFunction)_NmzResult, METH_VARARGS|METH_KEYWORDS,
       "Return cone property" },
-    // { "NmzSetVerboseDefault", (PyCFunction)NmzSetVerboseDefault, METH_VARARGS,
-    //   "Set verbosity" },
-    // { "NmzSetVerbose", (PyCFunction)NmzSetVerbose_Outer, METH_VARARGS,
-    //   "Set verbosity of cone" },
+    { "NmzSetVerboseDefault", (PyCFunction)NmzSetVerboseDefault, METH_VARARGS,
+      "Set verbosity" },
+    { "NmzSetVerbose", (PyCFunction)NmzSetVerbose_Outer, METH_VARARGS,
+      "Set verbosity of cone" },
     { "NmzListConeProperties", (PyCFunction)NmzListConeProperties,METH_NOARGS,
       "List all available properties" },
     // { "NmzHilbertSeries", (PyCFunction)NmzHilbertSeries_Outer, METH_VARARGS,
     //   "Returns Hilbert series, either HSOP or not" },
     // { "NmzGetPolynomial", (PyCFunction)NmzGetPolynomial, METH_VARARGS,
     //   "Returns grading polynomial" },
-    // { "NmzSymmetrizedCone", (PyCFunction)NmzSymmetrizedCone, METH_VARARGS,
-    //   "Returns symmetrized cone" },
-    // { "NmzSetNumberOfNormalizThreads", (PyCFunction)NmzSetNumberOfNormalizThreads, METH_VARARGS,
-    //   "Sets the Normaliz thread limit" },
+    { "NmzSetNumberOfNormalizThreads", (PyCFunction)NmzSetNumberOfNormalizThreads, METH_VARARGS,
+      "Sets the Normaliz thread limit" },
     // { "NmzSetNrCoeffQuasiPol", (PyCFunction)NmzSetNrCoeffQuasiPol, METH_VARARGS,
     //   "Sets the period bound for the quasi-polynomial" },
     // { "NmzGetEuclideanVolume", (PyCFunction)NmzGetEuclideanVolume, METH_VARARGS,
