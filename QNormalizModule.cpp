@@ -1239,9 +1239,9 @@ extern "C" void initPyQNormaliz_cpp(void)
         INITERROR;
     }
     
-    QNormalizError = PyErr_NewException(const_cast<char*>("Normaliz.error"), NULL, NULL );
+    QNormalizError = PyErr_NewException(const_cast<char*>("QNormaliz.error"), NULL, NULL );
     Py_INCREF( QNormalizError );
-    PyQNormaliz_cppError = PyErr_NewException(const_cast<char*>("Normaliz.interface_error"), NULL, NULL );
+    PyQNormaliz_cppError = PyErr_NewException(const_cast<char*>("QNormaliz.interface_error"), NULL, NULL );
     Py_INCREF( PyQNormaliz_cppError );
     
     PyModule_AddObject( module, "error", QNormalizError );
