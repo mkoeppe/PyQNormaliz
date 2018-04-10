@@ -49,10 +49,18 @@ typedef int py_size_t;
 #define FUNC_BEGIN try {
 
 #define FUNC_END \
+    } catch (libQnormaliz::InterruptException& e ) {\
+        PyOS_setsig(SIGINT,current_interpreter_sigint_handler);\
+        libQnormaliz::nmz_interrupted = false; \
+        PyErr_SetInterrupt(); \
+        PyErr_CheckSignals(); \
+        return NULL; \
     } catch (libQnormaliz::NormalizException& e) { \
+        PyOS_setsig(SIGINT,current_interpreter_sigint_handler);\
         PyErr_SetString( QNormalizError, e.what() ); \
         return NULL; \
     } catch( exception& e ) { \
+        PyOS_setsig(SIGINT,current_interpreter_sigint_handler);\
         PyErr_SetString( PyQNormaliz_cppError, e.what() ); \
         return NULL; \
     }
@@ -63,9 +71,9 @@ typedef int py_size_t;
  * 
  ***************************************************************************/
 
-// void signal_handler( int signal ){
-//     libQnormaliz::nmz_interrupted = true;
-// }
+void signal_handler( int signal ){
+    libQnormaliz::nmz_interrupted = true;
+}
 
 /***************************************************************************
  * 
@@ -442,28 +450,6 @@ PyObject* NmzTriangleListToPyList(const vector< pair<vector<libQnormaliz::key_t>
 }
 
 // template<typename Integer>
-// PyObject* NmzStanleyDataToPyList(const libQnormaliz::STANLEYDATA<Integer>& StanleyData)
-// {
-//     PyObject* pair = PyList_New(2);
-//     PyList_SetItem(pair, 0, NmzVectorToPyList<libQnormaliz::key_t>(StanleyData.key));
-//     PyList_SetItem(pair, 1, NmzMatrixToPyList(StanleyData.offsets.get_elements()));
-//     return pair;
-// }
-
-// template<typename Integer>
-// PyObject* NmzStanleyDecToPyList(const list<libQnormaliz::STANLEYDATA<Integer> >& StanleyDec)
-// {
-//     const size_t n = StanleyDec.size();
-//     PyObject* M = PyList_New( n );
-//     typename list<libQnormaliz::STANLEYDATA<Integer> >::const_iterator S = StanleyDec.begin();
-//     for (size_t i = 0; i < n; ++i) {        
-//         PyList_SetItem(M, i,NmzStanleyDataToPyList(*S) );
-//         ++S;
-//     }
-//     return M;
-// }
-
-// template<typename Integer>
 // static PyObject* _NmzBasisChangeIntern(Cone<Integer>* C)
 // {
 //     Sublattice_Representation<Integer> bc = C->getSublattice();
@@ -665,7 +651,10 @@ PyObject* _NmzCompute(Cone<Integer>* C, PyObject* args)
         string prop_str(PyUnicodeToString(prop));
         propsToCompute.set( libQnormaliz::toConeProperty(prop_str) );
     }
+
+    current_interpreter_sigint_handler = PyOS_setsig(SIGINT,signal_handler);
     ConeProperties notComputed = C->compute(propsToCompute);
+    PyOS_setsig(SIGINT,current_interpreter_sigint_handler);
 
     // Cone.compute returns the not computed properties
     // we return a bool, true when everything requested was computed
@@ -747,8 +736,9 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
     string prop = PyUnicodeToString( prop_obj );
 
     libQnormaliz::ConeProperty::Enum p = libQnormaliz::toConeProperty(prop);
-    
+    current_interpreter_sigint_handler = PyOS_setsig(SIGINT,signal_handler);
     ConeProperties notComputed = C->compute(ConeProperties(p));
+    PyOS_setsig(SIGINT,current_interpreter_sigint_handler);
     
     if (notComputed.any()) {
         return Py_None;
