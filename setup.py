@@ -17,7 +17,6 @@ setup(
     url = 'https://github.com/Normaliz/PyQNormaliz',
     ext_modules = [ Extension( "PyQNormaliz_cpp",
                               [ "QNormalizModule.cpp" ],
-                              extra_compile_args=['-I/home/sebastian/Dokumente/projects/Normaliz/worktree-enfnormaliz/nmz_opt_lib/include', '-L/home/sebastian/Dokumente/projects/Normaliz/worktree-enfnormaliz/nmz_opt_lib/lib'],
                               extra_link_args=['-lQnormaliz', '-lgmp' ],
                               define_macros = macro_list ) ],
     
