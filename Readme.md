@@ -36,37 +36,4 @@ python setup.py install
 
 ## Usage
 
-The main command is `NmzCone` to create a cone, and the member functions
-of the cone class to compute properties. For a full list of input and output
-properties, see the QNormaliz manual.
-
-To create a cone, use
-```
-import PyQNormaliz_cpp
-C = PyQNormaliz_cpp.NmzCone(number_field="min_poly (a2-2) embedding 1.4+/-0.1",cone=[[[1],[0,1]],[[1],[-1]]])
-```
-
-All possible QNormaliz input properties can be given as keyword arguments.
-
-NmzCompute takes a cone as first argument, followed by arbitrary many strings, or a list of strings,
-describing QNormaliz output properties. NmzCompute lets QNormaliz compute the necessary values, and
-returns true if everything was computed properly, false otherwise.
-```
-PyQNormaliz_cpp.NmzCompute(C, "SupportHyperplanes")
-```
-or
-```
-PyQNormaliz_cpp.NmzCompute(C, ["SupportHyperplanes"])
-```
-
-NmzIsComputed takes a cone and a string representing an output property, and returns true if the
-property is already computed for the cone, false otherwise.
-```
-PyQNormaliz_cpp.NmzIsComputed(C, "SupportHyperplanes")
-```
-
-NmzResult takes a cone and a string representing an output property, and returns the computed
-value of this property as a matrix, a list, or as a bool.
-```
-PyQNormaliz_cpp.NmzResult(C, "SupportHyperplanes")
-```
+See this [notebook](https://nbviewer.jupyter.org/github/sebasguts/PyQNormaliz/blob/master/examples/Dodecahedron.ipynb) as an example.
