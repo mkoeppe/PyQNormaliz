@@ -26,10 +26,10 @@ using std::istringstream;
 
 
 using libQnormaliz::Cone;
-//using libQnormaliz::ConeProperty;
+//using libQnormaliz::QConeProperty;
 using libQnormaliz::ConeProperties;
 using libQnormaliz::Sublattice_Representation;
-using libQnormaliz::Type::InputType;
+using libQnormaliz::QType::InputType;
 
 #include <vector>
 using std::map;
@@ -511,8 +511,8 @@ static PyObject* NmzListConeProperties(PyObject* args)
     PyObject* return_list = PyList_New( 2 );
     
     ConeProperties props;
-    for(int i=0; i < libQnormaliz::ConeProperty::EnumSize;i++){
-        props.set( static_cast<libQnormaliz::ConeProperty::Enum>(i) );
+    for(int i=0; i < libQnormaliz::QConeProperty::EnumSize;i++){
+        props.set( static_cast<libQnormaliz::QConeProperty::Enum>(i) );
     }
     
     ConeProperties goals = props.goals();
@@ -528,18 +528,18 @@ static PyObject* NmzListConeProperties(PyObject* args)
     PyList_SetItem( return_list, 1, option_list );
     
     int list_position = 0;
-    for(int i=0; i < libQnormaliz::ConeProperty::EnumSize;i++){
-      if(goals.test(static_cast<libQnormaliz::ConeProperty::Enum>(i))){
-          string name = libQnormaliz::toString(static_cast<libQnormaliz::ConeProperty::Enum>(i));
+    for(int i=0; i < libQnormaliz::QConeProperty::EnumSize;i++){
+      if(goals.test(static_cast<libQnormaliz::QConeProperty::Enum>(i))){
+          string name = libQnormaliz::toString(static_cast<libQnormaliz::QConeProperty::Enum>(i));
           PyList_SetItem( goal_list, list_position, StringToPyUnicode( name ) );
           list_position++;
       }
     }
     
     list_position = 0;
-    for(int i=0; i < libQnormaliz::ConeProperty::EnumSize;i++){
-      if(options.test(static_cast<libQnormaliz::ConeProperty::Enum>(i))){
-          string name = libQnormaliz::toString(static_cast<libQnormaliz::ConeProperty::Enum>(i));
+    for(int i=0; i < libQnormaliz::QConeProperty::EnumSize;i++){
+      if(options.test(static_cast<libQnormaliz::QConeProperty::Enum>(i))){
+          string name = libQnormaliz::toString(static_cast<libQnormaliz::QConeProperty::Enum>(i));
           PyList_SetItem( option_list, list_position, StringToPyUnicode( name ) );
           list_position++;
       }
@@ -694,7 +694,7 @@ PyObject* NmzIsComputed(Cone<Integer>* C, PyObject* prop)
 {
     FUNC_BEGIN
     
-    libQnormaliz::ConeProperty::Enum p = libQnormaliz::toConeProperty(PyUnicodeToString( prop ) );
+    libQnormaliz::QConeProperty::Enum p = libQnormaliz::toConeProperty(PyUnicodeToString( prop ) );
   
     return C->isComputed(p) ? Py_True : Py_False;
 
@@ -733,7 +733,7 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
 
     string prop = PyUnicodeToString( prop_obj );
 
-    libQnormaliz::ConeProperty::Enum p = libQnormaliz::toConeProperty(prop);
+    libQnormaliz::QConeProperty::Enum p = libQnormaliz::toConeProperty(prop);
     current_interpreter_sigint_handler = PyOS_setsig(SIGINT,signal_handler);
     ConeProperties notComputed = C->compute(ConeProperties(p));
     PyOS_setsig(SIGINT,current_interpreter_sigint_handler);
@@ -743,71 +743,71 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
     }
 
     switch (p) {
-    case libQnormaliz::ConeProperty::Generators:
+    case libQnormaliz::QConeProperty::Generators:
         return NmzMatrixToPyList(C->getGenerators());
 
-    case libQnormaliz::ConeProperty::ExtremeRays:
+    case libQnormaliz::QConeProperty::ExtremeRays:
         return NmzMatrixToPyList(C->getExtremeRays());
 
-    case libQnormaliz::ConeProperty::VerticesOfPolyhedron:
+    case libQnormaliz::QConeProperty::VerticesOfPolyhedron:
         return NmzMatrixToPyList(C->getVerticesOfPolyhedron());
 
-    case libQnormaliz::ConeProperty::SupportHyperplanes:
+    case libQnormaliz::QConeProperty::SupportHyperplanes:
         return NmzMatrixToPyList(C->getSupportHyperplanes());
 
-//     case libQnormaliz::ConeProperty::SuppHypsFloat:
+//     case libQnormaliz::QConeProperty::SuppHypsFloat:
 //         return NmzMatrixToPyList(C->getSuppHypsFloat());
 
-//     case libQnormaliz::ConeProperty::TriangulationSize:
+//     case libQnormaliz::QConeProperty::TriangulationSize:
 //         return NmzToPyNumber(C->getTriangulationSize());
 
-//     case libQnormaliz::ConeProperty::TriangulationDetSum:
+//     case libQnormaliz::QConeProperty::TriangulationDetSum:
 //         return NmzToPyNumber(C->getTriangulationDetSum());
 
-    case libQnormaliz::ConeProperty::Triangulation:
+    case libQnormaliz::QConeProperty::Triangulation:
         return NmzTriangleListToPyList<Integer>(C->getTriangulation());
 
-//     case libQnormaliz::ConeProperty::Multiplicity:
+//     case libQnormaliz::QConeProperty::Multiplicity:
 //         return NmzToPyList(C->getMultiplicity());
     
-//     case libQnormaliz::ConeProperty::Integral:
+//     case libQnormaliz::QConeProperty::Integral:
 //         return NmzToPyList(C->getIntegral());
     
-//     case libQnormaliz::ConeProperty::VirtualMultiplicity:
+//     case libQnormaliz::QConeProperty::VirtualMultiplicity:
 //         return NmzToPyList(C->getVirtualMultiplicity());
 
-//     case libQnormaliz::ConeProperty::RecessionRank:
+//     case libQnormaliz::QConeProperty::RecessionRank:
 //         return NmzToPyNumber(C->getRecessionRank());
 
-    case libQnormaliz::ConeProperty::AffineDim:
+    case libQnormaliz::QConeProperty::AffineDim:
         return NmzToPyNumber(C->getAffineDim());
 
-//     case libQnormaliz::ConeProperty::ModuleRank:
+//     case libQnormaliz::QConeProperty::ModuleRank:
 //         return NmzToPyNumber(C->getModuleRank());
 
-//     case libQnormaliz::ConeProperty::HilbertBasis:
+//     case libQnormaliz::QConeProperty::HilbertBasis:
 //         return NmzMatrixToPyList(C->getHilbertBasis());
 
-    case libQnormaliz::ConeProperty::MaximalSubspace:
+    case libQnormaliz::QConeProperty::MaximalSubspace:
         return NmzMatrixToPyList(C->getMaximalSubspace());
 
-//     case libQnormaliz::ConeProperty::ModuleGenerators:
+//     case libQnormaliz::QConeProperty::ModuleGenerators:
 //         return NmzMatrixToPyList(C->getModuleGenerators());
 
-//     case libQnormaliz::ConeProperty::Deg1Elements:
+//     case libQnormaliz::QConeProperty::Deg1Elements:
 //         return NmzMatrixToPyList(C->getDeg1Elements());
 
-//     case libQnormaliz::ConeProperty::HilbertSeries:
+//     case libQnormaliz::QConeProperty::HilbertSeries:
 //         {
-//         bool is_HSOP = C->isComputed(libQnormaliz::ConeProperty::HSOP);
+//         bool is_HSOP = C->isComputed(libQnormaliz::QConeProperty::HSOP);
 //         return NmzHilbertSeriesToPyList(C->getHilbertSeries(),is_HSOP);
 //         }
 
-//     case libQnormaliz::ConeProperty::WeightedEhrhartSeries:
+//     case libQnormaliz::QConeProperty::WeightedEhrhartSeries:
 //         return NmzWeightedEhrhartSeriesToPyList(C->getWeightedEhrhartSeries());
         
 
-//     case libQnormaliz::ConeProperty::Grading:
+//     case libQnormaliz::QConeProperty::Grading:
 //         {
 //         vector<Integer> grad = C->getGrading();
 //         Integer denom = C->getGradingDenom();
@@ -817,142 +817,142 @@ PyObject* _NmzResultImpl(Cone<Integer>* C, PyObject* prop_obj)
 //         return return_list;
 //         }
 
-    case libQnormaliz::ConeProperty::IsPointed:
+    case libQnormaliz::QConeProperty::IsPointed:
         return BoolToPyBool(C->isPointed());
 
-//     case libQnormaliz::ConeProperty::IsDeg1ExtremeRays:
+//     case libQnormaliz::QConeProperty::IsDeg1ExtremeRays:
 //         return BoolToPyBool(C->isDeg1ExtremeRays());
 
-//     case libQnormaliz::ConeProperty::IsDeg1HilbertBasis:
+//     case libQnormaliz::QConeProperty::IsDeg1HilbertBasis:
 //         return BoolToPyBool(C->isDeg1HilbertBasis());
 
-//     case libQnormaliz::ConeProperty::IsIntegrallyClosed:
+//     case libQnormaliz::QConeProperty::IsIntegrallyClosed:
 //         return BoolToPyBool(C->isIntegrallyClosed());
 
-//     case libQnormaliz::ConeProperty::OriginalMonoidGenerators:
+//     case libQnormaliz::QConeProperty::OriginalMonoidGenerators:
 //         return NmzMatrixToPyList(C->getOriginalMonoidGenerators());
 
-//     case libQnormaliz::ConeProperty::IsReesPrimary:
+//     case libQnormaliz::QConeProperty::IsReesPrimary:
 //         return BoolToPyBool(C->isReesPrimary());
 
-//     case libQnormaliz::ConeProperty::ReesPrimaryMultiplicity:
+//     case libQnormaliz::QConeProperty::ReesPrimaryMultiplicity:
 //         return NmzToPyNumber(C->getReesPrimaryMultiplicity());
 
-//     case libQnormaliz::ConeProperty::StanleyDec:
+//     case libQnormaliz::QConeProperty::StanleyDec:
 //         return NmzStanleyDecToPyList(C->getStanleyDec());
 
-//     case libQnormaliz::ConeProperty::ExcludedFaces:
+//     case libQnormaliz::QConeProperty::ExcludedFaces:
 //         return NmzMatrixToPyList(C->getExcludedFaces());
 
-    case libQnormaliz::ConeProperty::Dehomogenization:
+    case libQnormaliz::QConeProperty::Dehomogenization:
         return NmzVectorToPyList(C->getDehomogenization());
 
-//     case libQnormaliz::ConeProperty::InclusionExclusionData:
+//     case libQnormaliz::QConeProperty::InclusionExclusionData:
 //         return NmzTriangleListToPyList<long>(C->getInclusionExclusionData());
 
-//     case libQnormaliz::ConeProperty::ClassGroup:
+//     case libQnormaliz::QConeProperty::ClassGroup:
 //         return NmzVectorToPyList(C->getClassGroup());
     
-    case libQnormaliz::ConeProperty::IsInhomogeneous:
+    case libQnormaliz::QConeProperty::IsInhomogeneous:
         return BoolToPyBool(C->isInhomogeneous());
     
 //     /* Sublattice properties */
     
-    case libQnormaliz::ConeProperty::Equations:
+    case libQnormaliz::QConeProperty::Equations:
         return NmzMatrixToPyList(C->getSublattice().getEquations());
     
-//     case libQnormaliz::ConeProperty::Congruences:
+//     case libQnormaliz::QConeProperty::Congruences:
 //         return NmzMatrixToPyList(C->getSublattice().getCongruences());
     
-    case libQnormaliz::ConeProperty::EmbeddingDim:
+    case libQnormaliz::QConeProperty::EmbeddingDim:
         return NmzToPyNumber(C->getEmbeddingDim());
     
-    case libQnormaliz::ConeProperty::Rank:
+    case libQnormaliz::QConeProperty::Rank:
         return NmzToPyNumber(C->getRank());
     
-//     case libQnormaliz::ConeProperty::Sublattice:
+//     case libQnormaliz::QConeProperty::Sublattice:
 //         return _NmzBasisChangeIntern(C);
     
-//     case libQnormaliz::ConeProperty::ExternalIndex:
+//     case libQnormaliz::QConeProperty::ExternalIndex:
 //         return NmzToPyNumber(C->getSublattice().getExternalIndex());
     
-//     case libQnormaliz::ConeProperty::InternalIndex:
+//     case libQnormaliz::QConeProperty::InternalIndex:
 //         return NmzToPyNumber(C->getIndex());
     
-//     case libQnormaliz::ConeProperty::WitnessNotIntegrallyClosed:
+//     case libQnormaliz::QConeProperty::WitnessNotIntegrallyClosed:
 //         return NmzVectorToPyList(C->getWitnessNotIntegrallyClosed());
     
     
 //     /* New stuff */
     
-//     case libQnormaliz::ConeProperty::GradingDenom:
+//     case libQnormaliz::QConeProperty::GradingDenom:
 //         return NmzToPyNumber(C->getGradingDenom());
     
-//     case libQnormaliz::ConeProperty::UnitGroupIndex:
+//     case libQnormaliz::QConeProperty::UnitGroupIndex:
 //         return NmzToPyNumber(C->getUnitGroupIndex());
     
-//     case libQnormaliz::ConeProperty::ModuleGeneratorsOverOriginalMonoid:
+//     case libQnormaliz::QConeProperty::ModuleGeneratorsOverOriginalMonoid:
 //         return NmzMatrixToPyList(C->getModuleGeneratorsOverOriginalMonoid());
     
-//     case libQnormaliz::ConeProperty::IntegerHull:
+//     case libQnormaliz::QConeProperty::IntegerHull:
 //     {
 //         Cone<Integer>* hull = new Cone<Integer>( C->getIntegerHullCone() );
 //         return pack_cone( hull ); 
 //     }
     
-//     case libQnormaliz::ConeProperty::ProjectCone:
+//     case libQnormaliz::QConeProperty::ProjectCone:
 //     {
 //         Cone<Integer>* projection = new Cone<Integer>(C->getProjectCone());
 //         return pack_cone( projection );
 //     }
     
-//     case libQnormaliz::ConeProperty::HilbertQuasiPolynomial:
+//     case libQnormaliz::QConeProperty::HilbertQuasiPolynomial:
 //         return NmzHilbertQuasiPolynomialToPyList<mpz_class>(C->getHilbertSeries()); //FIXME: Why is this return value not parametrized, but mpz_class only?
     
-//     case libQnormaliz::ConeProperty::WeightedEhrhartQuasiPolynomial:
+//     case libQnormaliz::QConeProperty::WeightedEhrhartQuasiPolynomial:
 //         return NmzWeightedEhrhartQuasiPolynomialToPyList<mpz_class>(C->getIntData());
     
-//     case libQnormaliz::ConeProperty::IsTriangulationNested:
+//     case libQnormaliz::QConeProperty::IsTriangulationNested:
 //         return BoolToPyBool(C->isTriangulationNested());
         
-//     case libQnormaliz::ConeProperty::IsTriangulationPartial:
+//     case libQnormaliz::QConeProperty::IsTriangulationPartial:
 //         return BoolToPyBool(C->isTriangulationPartial());
         
-    case libQnormaliz::ConeProperty::ConeDecomposition:
+    case libQnormaliz::QConeProperty::ConeDecomposition:
         return NmzBoolMatrixToPyList(C->getOpenFacets());
     
-//     case libQnormaliz::ConeProperty::IsGorenstein:
+//     case libQnormaliz::QConeProperty::IsGorenstein:
 //         return BoolToPyBool(C->isGorenstein());
         
-//     case libQnormaliz::ConeProperty::GeneratorOfInterior:
+//     case libQnormaliz::QConeProperty::GeneratorOfInterior:
 //         return NmzVectorToPyList(C->getGeneratorOfInterior());
         
-//     case libQnormaliz::ConeProperty::VerticesFloat:
+//     case libQnormaliz::QConeProperty::VerticesFloat:
 //         return NmzMatrixToPyList(C->getVerticesFloat());
         
-//     case libQnormaliz::ConeProperty::Volume:
+//     case libQnormaliz::QConeProperty::Volume:
 //         return NmzToPyList(C->getVolume());
 
-//     case libQnormaliz::ConeProperty::EuclideanVolume:
+//     case libQnormaliz::QConeProperty::EuclideanVolume:
 //         return NmzToPyNumber(C->getEuclideanVolume());
 
 //  the following properties are compute options and do not return anything
-    case libQnormaliz::ConeProperty::DualMode:
-    case libQnormaliz::ConeProperty::DefaultMode:
-    case libQnormaliz::ConeProperty::Approximate:
-    case libQnormaliz::ConeProperty::BottomDecomposition:
-    case libQnormaliz::ConeProperty::KeepOrder:
-    case libQnormaliz::ConeProperty::NoBottomDec:
-    case libQnormaliz::ConeProperty::PrimalMode:
-    case libQnormaliz::ConeProperty::Symmetrize:
-    case libQnormaliz::ConeProperty::NoSymmetrization:
-    case libQnormaliz::ConeProperty::BigInt:
-    case libQnormaliz::ConeProperty::HSOP:
-        PyErr_SetString( PyQNormaliz_cppError, "ConeProperty is input-only" );
+    case libQnormaliz::QConeProperty::DualMode:
+    case libQnormaliz::QConeProperty::DefaultMode:
+    case libQnormaliz::QConeProperty::Approximate:
+    case libQnormaliz::QConeProperty::BottomDecomposition:
+    case libQnormaliz::QConeProperty::KeepOrder:
+    case libQnormaliz::QConeProperty::NoBottomDec:
+    case libQnormaliz::QConeProperty::PrimalMode:
+    case libQnormaliz::QConeProperty::Symmetrize:
+    case libQnormaliz::QConeProperty::NoSymmetrization:
+    case libQnormaliz::QConeProperty::BigInt:
+    case libQnormaliz::QConeProperty::HSOP:
+        PyErr_SetString( PyQNormaliz_cppError, "QConeProperty is input-only" );
         return NULL;
 // #if NMZ_RELEASE >= 30200
-//     case libQnormaliz::ConeProperty::NoSubdivision:
-//         PyErr_SetString( PyQNormaliz_cppError, "ConeProperty is input-only" );
+//     case libQnormaliz::QConeProperty::NoSubdivision:
+//         PyErr_SetString( PyQNormaliz_cppError, "QConeProperty is input-only" );
 //         return NULL;
 // #endif
     default:
