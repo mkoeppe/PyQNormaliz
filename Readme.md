@@ -1,38 +1,27 @@
 # PyQNormaliz - An interface to QNormaliz
 
 
-## What is PyQQNormaliz
+## What is PyQNormaliz
 
-PyQQNormaliz provides an interface to QNormaliz (https://www.normaliz.uni-osnabrueck.de) via libQNormaliz.
-It offers the complete functionality of QNormaliz, and can be used interactively from python. For a first example,
-see [this introduction](examples/PyQNormaliz_Tutorial.ipynb) by Richard Sieg.
+PyQNormaliz provides an interface to QNormaliz (https://www.normaliz.uni-osnabrueck.de) via libQNormaliz. It offers the complete functionality of QNormaliz, and can be used interactively from python.
 
 ## Requirements
 
 * python 2.7 or higher or python 3.4 or higher
-* Recent version of QNormaliz (https://github.com/Normaliz/Normaliz/tree/enfnormaliz2018)
+* Normaliz 3.6.0 or higher  (https://github.com/Normaliz/Normaliz/releases)
 
 ## Installation
 
-You need to have QNormaliz installed on your system via the following commands
+The PyQNormaliz install script assumes that you have executed the
 ```
-git clone https://github.com/Normaliz/Normaliz.git
-cd Normaliz
-git checkout enfnormaliz2018
-NORMALIZ_PATH=${PWD}
-./install_normaliz_with_qnormaliz_eantic.sh
-make install
+install_normaliz_with_qnormaliz_eantic.sh
 ```
-is enough. If you prefer or are not able to install it, you need to set CPATH and
-LD_LIBRARY_PATH accordingly.
+script. To install PyNormaliz and PyQNormaliz navigate to the Normaliz directory and type
+```
+./install_pynormaliz.sh --user
+```
 
-After that, you can install PyQNormaliz via
-```
-git clone https://github.com/sebasguts/PyQNormaliz.git
-cd PyQNormaliz
-python setup.py build_ext --include-dirs=${NORMALIZ_PATH}/nmz_opt_lib/include --library-dirs=${NORMALIZ_PATH}/nmz_opt_lib/lib
-python setup.py install
-```
+The script can be customized by some options. See Appendix E of the [Normaliz manual](https://github.com/Normaliz/Normaliz/blob/master/doc/Normaliz.pdf).
 
 ## Usage
 
