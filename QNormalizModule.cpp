@@ -207,7 +207,8 @@ bool PyNumberToNmz( PyObject * in, mpq_class& out ){
         return true;
     }
     PyObject * in_as_string = PyObject_Str( in );
-    const char* in_as_c_string = PyUnicodeToString( in_as_string ).c_str();
+    string s = PyUnicodeToString( in_as_string );
+    const char* in_as_c_string = s.c_str();
     out.set_str( in_as_c_string, 10 );
     return true;
 }
@@ -225,7 +226,8 @@ bool PyNumberToNmz( PyObject * in, mpz_class& out ){
       return true;
   }
   PyObject * in_as_string = PyObject_Str( in );
-  const char* in_as_c_string = PyUnicodeToString( in_as_string ).c_str();
+  string s = PyUnicodeToString( in_as_string );
+  const char* in_as_c_string = s.c_str();
   out.set_str( in_as_c_string, 10 );
   return true;
 }
@@ -236,15 +238,6 @@ PyObject* NmzToPyNumber( mpz_class in ){
   char * pend;
   PyObject* ret_val = PyLong_FromString( mpz_as_c_string, &pend, 10 );
   return ret_val;
-}
-
-PyObject* NmzToPyList( mpq_class in ){
-    PyObject* out_list = PyList_New( 2 );
-    PyList_SetItem( out_list, 0, NmzToPyNumber( in.get_num() ) );
-    PyList_SetItem( out_list, 1, NmzToPyNumber( in.get_den() ) );
-    if(RationalHandler!=NULL)
-        out_list = CallPythonFuncOnOneArg(RationalHandler,out_list);
-    return out_list;
 }
 
 PyObject* NmzToPyNumber( mpq_class in ){
@@ -381,7 +374,7 @@ PyObject* NmzToPyNumber( renf_elem_class in ){
     fmpq_poly_init(current);
     in.get_fmpq_poly(current);
     vector<mpq_class> output;
-    fmpq_poly2vector(output,current);
+    fmpq_poly2vector(output,current); // is this the correct length??
     PyObject * out_list = NmzVectorToPyList(output,false);
     if(NumberfieldElementHandler!=NULL)
         out_list = CallPythonFuncOnOneArg(NumberfieldElementHandler,out_list);
@@ -453,7 +446,7 @@ struct NumberFieldCone{
 void delete_cone_renf( PyObject* cone ){
   NumberFieldCone * cone_ptr = reinterpret_cast<NumberFieldCone*>( PyCapsule_GetPointer( cone, cone_name ) );
   delete cone_ptr->cone;
-  delete cone_ptr->nf;
+  //delete cone_ptr->nf;
 }
 
 Cone<renf_elem_class>* get_cone_renf( PyObject* cone ){
@@ -610,7 +603,7 @@ PyObject* _NmzCompute(Cone<Integer>* C, PyObject* args)
         }
     }else{
         to_compute = PyList_New( arg_len - 1 );
-        for( int i = 1;i<arg_len;i++){
+        for( int i = 1;i<arg_len;i++){  // Is i the correct index?? -mkoeppe
             PyList_SetItem( to_compute, i, PyTuple_GetItem( args, i ) );
         }
     }
