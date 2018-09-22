@@ -603,7 +603,7 @@ PyObject* _NmzCompute(Cone<Integer>* C, PyObject* args)
         }
     }else{
         to_compute = PyList_New( arg_len - 1 );
-        for( int i = 1;i<arg_len;i++){
+        for( int i = 1;i<arg_len;i++){  // Is i the correct index?? -mkoeppe
             PyList_SetItem( to_compute, i, PyTuple_GetItem( args, i ) );
         }
     }
