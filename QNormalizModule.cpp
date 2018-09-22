@@ -535,6 +535,10 @@ static PyObject* _NmzQCone_internal(PyObject * args, PyObject* kwargs)
     NumberField * renf = new NumberField();
 
     PyObject* number_field_data = PyDict_GetItemString(kwargs,"number_field");
+    if(number_field_data == NULL){
+        PyErr_SetString( PyQNormaliz_cppError, "no number field data given" );
+        return NULL;
+    }
     istringstream number_field_data_stream(PyUnicodeToString(number_field_data));
     number_field_data_stream >> *renf;
     // Error handling
