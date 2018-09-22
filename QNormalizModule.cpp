@@ -240,15 +240,6 @@ PyObject* NmzToPyNumber( mpz_class in ){
   return ret_val;
 }
 
-PyObject* NmzToPyList( mpq_class in ){
-    PyObject* out_list = PyList_New( 2 );
-    PyList_SetItem( out_list, 0, NmzToPyNumber( in.get_num() ) );
-    PyList_SetItem( out_list, 1, NmzToPyNumber( in.get_den() ) );
-    if(RationalHandler!=NULL)
-        out_list = CallPythonFuncOnOneArg(RationalHandler,out_list);
-    return out_list;
-}
-
 PyObject* NmzToPyNumber( mpq_class in ){
     PyObject* out_list = PyList_New( 2 );
     PyList_SetItem( out_list, 0, NmzToPyNumber( in.get_num() ) );
