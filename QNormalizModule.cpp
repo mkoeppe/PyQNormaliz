@@ -207,7 +207,8 @@ bool PyNumberToNmz( PyObject * in, mpq_class& out ){
         return true;
     }
     PyObject * in_as_string = PyObject_Str( in );
-    const char* in_as_c_string = PyUnicodeToString( in_as_string ).c_str();
+    string s = PyUnicodeToString( in_as_string );
+    const char* in_as_c_string = s.c_str();
     out.set_str( in_as_c_string, 10 );
     return true;
 }
@@ -225,7 +226,8 @@ bool PyNumberToNmz( PyObject * in, mpz_class& out ){
       return true;
   }
   PyObject * in_as_string = PyObject_Str( in );
-  const char* in_as_c_string = PyUnicodeToString( in_as_string ).c_str();
+  string s = PyUnicodeToString( in_as_string );
+  const char* in_as_c_string = s.c_str();
   out.set_str( in_as_c_string, 10 );
   return true;
 }
@@ -453,7 +455,7 @@ struct NumberFieldCone{
 void delete_cone_renf( PyObject* cone ){
   NumberFieldCone * cone_ptr = reinterpret_cast<NumberFieldCone*>( PyCapsule_GetPointer( cone, cone_name ) );
   delete cone_ptr->cone;
-  delete cone_ptr->nf;
+  //delete cone_ptr->nf;
 }
 
 Cone<renf_elem_class>* get_cone_renf( PyObject* cone ){
