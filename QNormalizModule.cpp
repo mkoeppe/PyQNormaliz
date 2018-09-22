@@ -374,7 +374,7 @@ PyObject* NmzToPyNumber( renf_elem_class in ){
     fmpq_poly_init(current);
     in.get_fmpq_poly(current);
     vector<mpq_class> output;
-    fmpq_poly2vector(output,current);
+    fmpq_poly2vector(output,current); // is this the correct length??
     PyObject * out_list = NmzVectorToPyList(output,false);
     if(NumberfieldElementHandler!=NULL)
         out_list = CallPythonFuncOnOneArg(NumberfieldElementHandler,out_list);
