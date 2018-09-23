@@ -547,7 +547,12 @@ static PyObject* _NmzQCone_internal(PyObject * args, PyObject* kwargs)
 
     map <InputType, vector< vector<NumberFieldElem> > > input;
     
-    PyDict_DelItemString(kwargs,"number_field");
+    PyDict_DelItemString(kwargs,"number_field");          // Doesn't
+                                                          // belong to
+                                                          // the
+                                                          // function,
+                                                          // don't
+                                                          // modify 
     if(kwargs!=NULL){
         PyObject* keys = PyDict_Keys(kwargs);
         PyObject* values = PyDict_Values(kwargs);
